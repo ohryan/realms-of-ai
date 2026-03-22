@@ -117,3 +117,27 @@ class World:
 
     def get_item_template(self, item_id: str) -> dict:
         return self.item_templates.get(item_id, {})
+
+    def resolve_item_id(self, raw: str) -> str | None:
+        """
+        Map what an NPC returned to a real item_id.
+        Tries exact match first, then case-insensitive name/id match.
+        Returns the canonical item_id, or None if nothing matches.
+        """
+        if not raw:
+            return None
+        # 1. Exact match
+        if raw in self.item_templates:
+            return raw
+        # 2. Case-insensitive id or name match
+        raw_l = raw.lower().replace(" ", "_")
+        for iid, item in self.item_templates.items():
+            if iid.lower() == raw_l:
+                return iid
+            if item.get("name", "").lower() == raw.lower():
+                return iid
+        # 3. Slug match (e.g. "Healing Potion" → "healing_potion")
+        slug = raw.lower().replace(" ", "_")
+        if slug in self.item_templates:
+            return slug
+        return None

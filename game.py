@@ -268,13 +268,14 @@ class Game(CommandsMixin):
                         R.print_quest_update(f"Quest complete: {self.quests.defs[qid]['name']}")
 
         elif t == "sell_item":
-            iid = action.item_id
+            iid = self.world.resolve_item_id(action.item_id or "")
             price = action.value or 0
             if not iid:
+                R.print_warning(f"(Couldn't find item '{action.item_id}' — sale not processed)")
                 return
             template = self.world.get_item_template(iid)
             if not template:
-                R.print_warning(f"(Item '{iid}' not found in world data)")
+                R.print_warning(f"(Item '{iid}' not found in world data — sale not processed)")
                 return
             if self.player.gold < price:
                 R.print_warning(
@@ -290,7 +291,7 @@ class Game(CommandsMixin):
             R.print_success(f"You bought {template['name']} for {price} gold.")
 
         elif t == "give_item":
-            iid = action.item_id
+            iid = self.world.resolve_item_id(action.item_id or "")
             if not iid:
                 return
             template = self.world.get_item_template(iid)

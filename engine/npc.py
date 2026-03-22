@@ -135,7 +135,7 @@ Quest status:
 Only use action types listed in your Available Actions section.
 - start_quest: Trigger when the player has clearly agreed to take a quest. Include quest_id.
 - complete_quest: Trigger when acknowledging a completed quest. Include quest_id. If you negotiated a different reward amount with the player, include value (gold amount); otherwise omit it and the default reward is used.
-- sell_item: Trigger when the player has clearly agreed to buy something. Include item_id and value (final price in gold after any negotiation).
+- sell_item: You MUST include this in the SAME response where you hand over an item. If you say you're selling something, this action MUST be present — it is what actually gives the player the item and deducts their gold. Include item_id (the exact id from your GAME FACTS, e.g. "healing_potion") and value (the agreed price in gold). Never confirm a sale without this action.
 - give_item: Trigger when giving something for free. Include item_id.
 
 {self._persuade_note()}"""
