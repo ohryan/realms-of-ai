@@ -1,0 +1,121 @@
+{
+  "start_room": "tavern",
+
+  "player_start": {
+    "inventory": ["rusty_dagger"]
+  },
+
+  "rooms": {
+    "tavern": {
+      "name": "The Rusty Flagon",
+      "file": "tavern.md",
+      "exits": {
+        "down": "cellar"
+      },
+      "npcs": ["old_mira", "gerald"],
+      "enemies": [],
+      "items": []
+    },
+    "cellar": {
+      "name": "Tavern Cellar",
+      "file": "cellar.md",
+      "exits": {
+        "up": "tavern"
+      },
+      "npcs": [],
+      "enemies": ["giant_rat_1", "giant_rat_2"],
+      "items": []
+    }
+  },
+
+  "enemies": {
+    "giant_rat_1": {
+      "name": "Giant Rat",
+      "file": "giant_rat.md",
+      "hp": 18,
+      "max_hp": 18,
+      "attack": 3,
+      "damage_dice": "1d4",
+      "defense": 1,
+      "xp": 30,
+      "gold": 0
+    },
+    "giant_rat_2": {
+      "name": "Giant Rat",
+      "file": "giant_rat.md",
+      "hp": 18,
+      "max_hp": 18,
+      "attack": 3,
+      "damage_dice": "1d4",
+      "defense": 1,
+      "xp": 30,
+      "gold": 0
+    }
+  },
+
+  "items": {
+    "rusty_dagger": {
+      "id": "rusty_dagger",
+      "name": "Rusty Dagger",
+      "file": "rusty_dagger.md",
+      "type": "weapon",
+      "damage_dice": "1d4",
+      "damage_bonus": 0,
+      "base_price": 5
+    },
+    "short_sword": {
+      "id": "short_sword",
+      "name": "Short Sword",
+      "file": "short_sword.md",
+      "type": "weapon",
+      "damage_dice": "1d6",
+      "damage_bonus": 1,
+      "base_price": 35
+    },
+    "healing_potion": {
+      "id": "healing_potion",
+      "name": "Healing Potion",
+      "file": "healing_potion.md",
+      "type": "consumable",
+      "heal": 40,
+      "base_price": 20
+    }
+  },
+
+  "npcs": {
+    "old_mira": {
+      "name": "Old Mira",
+      "title": "Tavern Keeper",
+      "persuadability": 3,
+      "file": "old_mira.md"
+    },
+    "gerald": {
+      "name": "Gerald",
+      "title": "the Merchant",
+      "persuadability": 7,
+      "file": "gerald.md"
+    }
+  },
+
+  "quests": {
+    "rat_problem": {
+      "id": "rat_problem",
+      "name": "A Rat Problem",
+      "file": "rat_problem.md",
+      "giver_npc": "old_mira",
+      "objectives": [
+        {
+          "id": "kill_rats",
+          "description": "Kill all rats in the cellar",
+          "type": "kill_all_in_room",
+          "room": "cellar"
+        }
+      ],
+      "reward": {
+        "gold": 50,
+        "xp": 100
+      },
+      "complete_npc": "old_mira"
+    }
+  }
+}

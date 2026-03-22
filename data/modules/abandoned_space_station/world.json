@@ -1,0 +1,401 @@
+{
+  "start_room": "docking_bay",
+  "player_start": {
+    "inventory": ["plasma_pistol"]
+  },
+
+  "rooms": {
+    "docking_bay": {
+      "name": "Docking Bay",
+      "file": "docking_bay.md",
+      "exits": {
+        "north": "main_corridor"
+      },
+      "npcs": [],
+      "enemies": [],
+      "items": []
+    },
+    "main_corridor": {
+      "name": "Main Corridor",
+      "file": "main_corridor.md",
+      "exits": {
+        "south": "docking_bay",
+        "north": "bridge",
+        "east":  "med_corridor",
+        "west":  "bar",
+        "down":  "aft_corridor"
+      },
+      "npcs": [],
+      "enemies": [],
+      "items": []
+    },
+    "bridge": {
+      "name": "Bridge",
+      "file": "bridge.md",
+      "exits": {
+        "south": "main_corridor"
+      },
+      "npcs": ["commander_reyes", "pilot_chen"],
+      "enemies": [],
+      "items": []
+    },
+    "med_corridor": {
+      "name": "Medical Corridor",
+      "file": "med_corridor.md",
+      "exits": {
+        "west": "main_corridor",
+        "east": "sick_bay"
+      },
+      "npcs": [],
+      "enemies": [],
+      "items": []
+    },
+    "sick_bay": {
+      "name": "Sick Bay",
+      "file": "sick_bay.md",
+      "exits": {
+        "west": "med_corridor"
+      },
+      "npcs": [],
+      "enemies": ["mutant_fungus_1", "mutant_fungus_2"],
+      "items": []
+    },
+    "bar": {
+      "name": "The Void's Edge Bar",
+      "file": "bar.md",
+      "exits": {
+        "east": "main_corridor",
+        "up":   "aft_corridor"
+      },
+      "npcs": ["bartender_nova", "merchant_voss", "patron_drake", "patron_lila", "patron_gruff"],
+      "enemies": [],
+      "items": []
+    },
+    "aft_corridor": {
+      "name": "Aft Corridor",
+      "file": "aft_corridor.md",
+      "exits": {
+        "up":    "main_corridor",
+        "down":  "bar",
+        "south": "cargo_bay"
+      },
+      "npcs": [],
+      "enemies": [],
+      "items": []
+    },
+    "cargo_bay": {
+      "name": "Cargo Bay",
+      "file": "cargo_bay.md",
+      "exits": {
+        "north": "aft_corridor",
+        "down":  "engineering"
+      },
+      "npcs": [],
+      "enemies": ["space_rat_1", "space_rat_2", "space_rat_3"],
+      "items": []
+    },
+    "engineering": {
+      "name": "Engineering Deck",
+      "file": "engineering.md",
+      "exits": {
+        "up":   "cargo_bay",
+        "down": "lower_decks"
+      },
+      "npcs": [],
+      "enemies": ["corrupted_bot_1", "corrupted_bot_2"],
+      "items": []
+    },
+    "lower_decks": {
+      "name": "Lower Decks",
+      "file": "lower_decks.md",
+      "exits": {
+        "up": "engineering"
+      },
+      "npcs": [],
+      "enemies": ["xenomorph_1", "xenomorph_2", "xenomorph_3"],
+      "items": []
+    }
+  },
+
+  "enemies": {
+    "space_rat_1": {
+      "name":        "Void Rat",
+      "file":        "space_rat.md",
+      "hp":          12,
+      "max_hp":      12,
+      "attack":      3,
+      "damage_dice": "1d3",
+      "defense":     0,
+      "xp":          20,
+      "gold":        0
+    },
+    "space_rat_2": {
+      "name":        "Void Rat",
+      "file":        "space_rat.md",
+      "hp":          12,
+      "max_hp":      12,
+      "attack":      3,
+      "damage_dice": "1d3",
+      "defense":     0,
+      "xp":          20,
+      "gold":        0
+    },
+    "space_rat_3": {
+      "name":        "Void Rat",
+      "file":        "space_rat.md",
+      "hp":          14,
+      "max_hp":      14,
+      "attack":      4,
+      "damage_dice": "1d3",
+      "defense":     1,
+      "xp":          25,
+      "gold":        0
+    },
+    "corrupted_bot_1": {
+      "name":        "Corrupted Security Bot",
+      "file":        "corrupted_bot.md",
+      "hp":          42,
+      "max_hp":      42,
+      "attack":      7,
+      "damage_dice": "1d6",
+      "defense":     3,
+      "xp":          65,
+      "gold":        10
+    },
+    "corrupted_bot_2": {
+      "name":        "Corrupted Security Bot",
+      "file":        "corrupted_bot.md",
+      "hp":          38,
+      "max_hp":      38,
+      "attack":      7,
+      "damage_dice": "1d6",
+      "defense":     3,
+      "xp":          60,
+      "gold":        8
+    },
+    "mutant_fungus_1": {
+      "name":        "Mycelid Horror",
+      "file":        "mutant_fungus.md",
+      "hp":          55,
+      "max_hp":      55,
+      "attack":      9,
+      "damage_dice": "1d8",
+      "defense":     4,
+      "xp":          100,
+      "gold":        0
+    },
+    "mutant_fungus_2": {
+      "name":        "Mycelid Horror",
+      "file":        "mutant_fungus.md",
+      "hp":          50,
+      "max_hp":      50,
+      "attack":      8,
+      "damage_dice": "1d8",
+      "defense":     4,
+      "xp":          90,
+      "gold":        0
+    },
+    "xenomorph_1": {
+      "name":        "Void Stalker",
+      "file":        "xenomorph_drone.md",
+      "hp":          80,
+      "max_hp":      80,
+      "attack":      13,
+      "damage_dice": "2d6",
+      "defense":     6,
+      "xp":          150,
+      "gold":        0
+    },
+    "xenomorph_2": {
+      "name":        "Void Stalker",
+      "file":        "xenomorph_drone.md",
+      "hp":          75,
+      "max_hp":      75,
+      "attack":      13,
+      "damage_dice": "2d6",
+      "defense":     6,
+      "xp":          140,
+      "gold":        0
+    },
+    "xenomorph_3": {
+      "name":        "Void Stalker Alpha",
+      "file":        "xenomorph_drone.md",
+      "hp":          95,
+      "max_hp":      95,
+      "attack":      15,
+      "damage_dice": "2d6",
+      "defense":     7,
+      "xp":          180,
+      "gold":        20
+    }
+  },
+
+  "items": {
+    "plasma_pistol": {
+      "id":           "plasma_pistol",
+      "name":         "Plasma Pistol",
+      "file":         "plasma_pistol.md",
+      "type":         "weapon",
+      "damage_dice":  "1d6",
+      "damage_bonus": 1,
+      "base_price":   30
+    },
+    "laser_rifle": {
+      "id":           "laser_rifle",
+      "name":         "Laser Rifle",
+      "file":         "laser_rifle.md",
+      "type":         "weapon",
+      "damage_dice":  "1d8",
+      "damage_bonus": 2,
+      "base_price":   80
+    },
+    "medkit": {
+      "id":          "medkit",
+      "name":        "Med-Kit",
+      "file":        "medkit.md",
+      "type":        "consumable",
+      "heal":        40,
+      "base_price":  25
+    },
+    "stim_pack": {
+      "id":          "stim_pack",
+      "name":        "Stim Pack",
+      "file":        "stim_pack.md",
+      "type":        "consumable",
+      "heal":        70,
+      "base_price":  45
+    },
+    "energy_cell": {
+      "id":          "energy_cell",
+      "name":        "Energy Cell",
+      "file":        "energy_cell.md",
+      "type":        "consumable",
+      "heal":        15,
+      "base_price":  10
+    }
+  },
+
+  "npcs": {
+    "commander_reyes": {
+      "name":           "Commander Reyes",
+      "title":          "Station Commander",
+      "persuadability": 3,
+      "file":           "commander_reyes.md"
+    },
+    "pilot_chen": {
+      "name":           "Pilot Chen",
+      "title":          "Flight Officer",
+      "persuadability": 6,
+      "file":           "pilot_chen.md"
+    },
+    "bartender_nova": {
+      "name":           "Nova",
+      "title":          "Bartender",
+      "persuadability": 7,
+      "file":           "bartender_nova.md"
+    },
+    "merchant_voss": {
+      "name":           "Voss",
+      "title":          "Merchant",
+      "persuadability": 8,
+      "file":           "merchant_voss.md"
+    },
+    "patron_drake": {
+      "name":           "Drake",
+      "title":          "Off-Duty Miner",
+      "persuadability": 5,
+      "file":           "patron_drake.md"
+    },
+    "patron_lila": {
+      "name":           "Lila",
+      "title":          "Scavenger",
+      "persuadability": 6,
+      "file":           "patron_lila.md"
+    },
+    "patron_gruff": {
+      "name":           "Gruff",
+      "title":          "Drifter",
+      "persuadability": 4,
+      "file":           "patron_gruff.md"
+    }
+  },
+
+  "quests": {
+    "vermin_infestation": {
+      "id":           "vermin_infestation",
+      "name":         "Vermin Infestation",
+      "file":         "vermin_infestation.md",
+      "giver_npc":    "bartender_nova",
+      "complete_npc": "bartender_nova",
+      "objectives": [
+        {
+          "id":          "clear_cargo_rats",
+          "description": "Clear the void rats from the cargo bay",
+          "type":        "kill_all_in_room",
+          "room":        "cargo_bay"
+        }
+      ],
+      "reward": {
+        "gold": 40,
+        "xp":   80
+      }
+    },
+    "system_reboot": {
+      "id":           "system_reboot",
+      "name":         "System Reboot",
+      "file":         "system_reboot.md",
+      "giver_npc":    "commander_reyes",
+      "complete_npc": "commander_reyes",
+      "objectives": [
+        {
+          "id":          "destroy_bots",
+          "description": "Destroy the corrupted security bots in engineering",
+          "type":        "kill_all_in_room",
+          "room":        "engineering"
+        }
+      ],
+      "reward": {
+        "gold": 75,
+        "xp":   150
+      }
+    },
+    "quarantine_breach": {
+      "id":           "quarantine_breach",
+      "name":         "Quarantine Breach",
+      "file":         "quarantine_breach.md",
+      "giver_npc":    "commander_reyes",
+      "complete_npc": "commander_reyes",
+      "objectives": [
+        {
+          "id":          "purge_fungus",
+          "description": "Purge the mycelid growth from the sick bay",
+          "type":        "kill_all_in_room",
+          "room":        "sick_bay"
+        }
+      ],
+      "reward": {
+        "gold": 120,
+        "xp":   250
+      }
+    },
+    "alien_incursion": {
+      "id":           "alien_incursion",
+      "name":         "Alien Incursion",
+      "file":         "alien_incursion.md",
+      "giver_npc":    "commander_reyes",
+      "complete_npc": "commander_reyes",
+      "objectives": [
+        {
+          "id":          "eliminate_stalkers",
+          "description": "Eliminate the void stalkers nesting in the lower decks",
+          "type":        "kill_all_in_room",
+          "room":        "lower_decks"
+        }
+      ],
+      "reward": {
+        "gold": 200,
+        "xp":   400
+      }
+    }
+  }
+}

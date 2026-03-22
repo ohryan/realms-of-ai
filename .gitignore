@@ -1,0 +1,5 @@
+data/config.json
+data/modules/*/memory/
+__pycache__/
+*.pyc
+.env
