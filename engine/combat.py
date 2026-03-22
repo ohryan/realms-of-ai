@@ -31,7 +31,7 @@ def _fight_one(player: Player, enemy: EnemyInstance) -> str:
     Fight a single enemy. Returns 'victory', 'dead', or 'fled'.
     """
     R.print_combat_header(enemy.name)
-    R.print_combat_action(f"{enemy.description}", R.DIM + R.WHITE)
+    R.print_combat_action(f"{enemy.description}", R.WHITE)
     print()
 
     while True:

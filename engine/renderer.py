@@ -262,7 +262,17 @@ def print_combat_header(enemy_name: str):
 
 
 def print_combat_action(text: str, color: str = WHITE):
-    print(f"  {color}{text}{RESET}")
+    w = _term_width()
+    max_w = w - 4  # 2 leading spaces + 2 margin
+    # Use stripped text for width measurement; if it fits, print with embedded ANSI intact
+    stripped = _strip_ansi(text)
+    if len(stripped) <= max_w:
+        print(f"  {color}{text}{RESET}")
+        return
+    # Too long — word-wrap the stripped version under the base color
+    import textwrap
+    for line in textwrap.wrap(stripped, width=max_w):
+        print(f"  {color}{line}{RESET}")
 
 
 def hp_bar(current: int, maximum: int, width: int = 20) -> str:
