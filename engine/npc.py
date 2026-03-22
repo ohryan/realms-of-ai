@@ -81,7 +81,7 @@ class NPC:
         if not self.memory:
             return ""
         facts = "\n".join(f"- {f}" for f in self.memory)
-        return f"\n=== ESTABLISHED FACTS (canon — always use these, never contradict them) ===\n{facts}\n"
+        return f"\n=== ESTABLISHED FACTS (things you have already said or revealed — never contradict these) ===\n{facts}\n"
 
     # ------------------------------------------------------------------ #
     #  Prompt building                                                     #
@@ -129,7 +129,7 @@ Quest status:
 - "dialogue": What {self.name} says aloud. Keep it concise — 1 to 3 sentences max. Natural, in-character speech.
 - "actions": Game actions to trigger. Only include when they fit naturally.
 - "end_conversation": Set to true only when you (the character) are saying goodbye.
-- "remember": Add a brief factual statement for anything worth remembering across sessions. This includes: personal facts you reveal about yourself, things the player told you, agreements or deals made, how the player treated you, or anything else that should colour future conversations. Only add things not already in Established Facts. Leave empty if nothing new came up.
+- "remember": Use this to stay consistent with yourself across sessions. Any time you invent or reveal a specific detail about yourself — your past, family, history, opinions, possessions, habits, a name you gave someone, a story you told — record it here as a short factual statement ("My daughter's name is Elsa", "I've worked here 15 years", "I told the player the sword came from Aldenmoor"). Also record agreements made and how the player treated you. Do NOT record things already in Established Facts. Leave empty if nothing new was revealed.
 
 === ACTION TYPES ===
 Only use action types listed in your Available Actions section.
