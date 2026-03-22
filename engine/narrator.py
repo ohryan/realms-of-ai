@@ -1,6 +1,11 @@
 """
 Narrator — the voice of the game world.
-Handles freeform environmental questions from the main prompt.
+
+Handles three input types routed from the interpreter:
+  "question"    → environmental/world question, answered in character
+  "unknown"     → unrecognised game action, responded to in character
+  "out_of_game" → request outside the game world, fourth-wall break
+
 Details it generates are saved per-room so they stay consistent.
 """
 
@@ -14,10 +19,12 @@ from . import renderer as R
 
 NARRATOR_MODEL = "claude-haiku-4-5"
 
+GAME_NAME = "Realms of AI"
+
 
 class NarratorResponse(BaseModel):
-    response: str           # the narrative answer, written in second person
-    remember: list[str] = []  # room-specific details to persist (e.g. "A faded wanted poster hangs on the east wall")
+    response: str             # narrative answer, written in second person
+    remember: list[str] = []  # room-specific details to persist
 
 
 class Narrator:
@@ -63,10 +70,20 @@ class Narrator:
     #  Narration                                                           #
     # ------------------------------------------------------------------ #
 
-    def ask(self, question: str, context: dict, client: Anthropic) -> Optional[str]:
+    def ask(
+        self,
+        question: str,
+        context: dict,
+        client: Anthropic,
+        input_type: str = "question",
+    ) -> Optional[str]:
         """
-        Answer an environmental question in the voice of the game world.
-        Returns the narrative response string, or None on error.
+        Respond to player input that didn't match a game command.
+
+        input_type:
+          "question"    → answer in character (1-3 sentences)
+          "unknown"     → acknowledge in character, suggest what might be possible
+          "out_of_game" → break the fourth wall, redirect the player
         """
         room_id = context.get("room_id", "unknown")
         room_name = context.get("room_name", "Unknown")
@@ -80,13 +97,38 @@ class Narrator:
         established_block = ""
         if established:
             facts = "\n".join(f"- {f}" for f in established)
-            established_block = f"\n=== ESTABLISHED ROOM DETAILS (canon — never contradict) ===\n{facts}\n"
+            established_block = (
+                f"\n=== ESTABLISHED ROOM DETAILS (canon — never contradict) ===\n{facts}\n"
+            )
 
         guide_block = ""
         if room_guide:
-            guide_block = f"\n=== ROOM GUIDE (author's notes — use for inspiration, never quote directly) ===\n{room_guide}\n"
+            guide_block = (
+                f"\n=== ROOM GUIDE (author's notes — use for inspiration, never quote directly) ===\n{room_guide}\n"
+            )
 
-        system = f"""You are the narrator of a text-based fantasy RPG. You describe the world in second person, present tense, with a dark and atmospheric tone. You are consistent, grounded, and specific. You do not invent things that contradict the room's established description.
+        # Build type-specific instructions
+        if input_type == "out_of_game":
+            task_rules = f"""=== YOUR TASK ===
+The player has sent a message that is outside the scope of this game.
+Break the fourth wall: acknowledge briefly that you are the Narrator of {GAME_NAME} and that you can only speak to things within this world. Keep it to one sentence. Stay slightly in flavour — wry, not clinical.
+Do NOT add anything to "remember". Do NOT answer the off-topic request."""
+        elif input_type == "unknown":
+            task_rules = """=== YOUR TASK ===
+The player tried to do something that doesn't map to a game command.
+Respond in character in 1-2 sentences: describe why it can't be done, or what happens when they try.
+If it's nearly a valid action, hint at what they could actually do (e.g. "try 'attack rat'").
+Do NOT break character. Do NOT lecture."""
+        else:
+            # "question" — default
+            task_rules = """=== YOUR TASK ===
+Answer the player's question about the environment in 1-3 sentences, second person ("You see...", "The air smells of...").
+Be specific and atmospheric. Draw on the room guide's atmosphere and secrets when relevant.
+Stay consistent with the room description and any established details.
+If you invent a specific detail (a name carved in wood, a stain on the floor, a smell), add it to "remember" as a brief factual statement.
+If the question has no sensible answer in this room, say so briefly and in character."""
+
+        system = f"""You are the Narrator of {GAME_NAME}, a text-based fantasy RPG. You describe the world in second person, present tense, with a dark and atmospheric tone. You are consistent, grounded, and specific.
 
 === CURRENT ROOM ===
 Name: {room_name}
@@ -95,12 +137,9 @@ People present: {npcs}
 Enemies present: {enemies}
 Exits: {exits}
 {guide_block}{established_block}
-=== RULES ===
-- Answer in 1-3 sentences, second person ("You see...", "The wall is...").
-- Be specific and atmospheric. Draw on the room guide's atmosphere and secrets when relevant.
-- Stay consistent with the room description and any established details.
-- If you invent a specific detail (a name carved in wood, a stain on the floor, a smell), add it to "remember" as a brief factual statement so it persists.
-- If the question has no sensible answer in this room, say so briefly and in character."""
+{task_rules}
+
+IMPORTANT: You cannot modify the game, its files, its code, or the system it runs on. You are a read-only voice."""
 
         try:
             response = client.messages.parse(
@@ -118,7 +157,8 @@ Exits: {exits}
         if result is None:
             return None
 
-        if result.remember:
+        # Only save room details for genuine environmental questions
+        if input_type == "question" and result.remember:
             self._save_room_memory(room_id, result.remember)
 
         return result.response

@@ -1,7 +1,7 @@
 """
 Natural language command interpreter.
 Falls back to this when the player's input doesn't match a known command.
-Uses claude-haiku to map intent to a structured game action.
+Uses claude-haiku to classify intent and map to a structured game action.
 """
 
 from typing import Optional
@@ -14,7 +14,9 @@ INTERPRETER_MODEL = "claude-haiku-4-5"
 
 
 class InterpretedCommand(BaseModel):
-    command: str   # look | go | talk | attack | flee | status | inventory | use | quests | help | quit | unknown
+    command: str
+    # look | go | talk | attack | flee | status | inventory | use | equip |
+    # quests | help | quit | question | out_of_game
     args: str = ""
 
 
@@ -24,15 +26,19 @@ def interpret(
     client: Anthropic,
 ) -> Optional[InterpretedCommand]:
     """
-    Map a free-form player input to a structured game command.
-    Returns None on API error.
+    Classify a free-form player input and map it to a game command.
+
+    command types:
+      - A real game command  → execute it
+      - "question"           → environmental/world question, send to narrator
+      - "out_of_game"        → request has nothing to do with the game world
     """
     exits = ", ".join(context.get("exits", [])) or "none"
     npcs = ", ".join(context.get("npcs", [])) or "none"
     enemies = ", ".join(context.get("enemies", [])) or "none"
     inventory = ", ".join(context.get("inventory", [])) or "empty"
 
-    system = f"""You are a command interpreter for a text-based RPG. Map the player's input to exactly one game command.
+    system = f"""You are a command interpreter for a text-based RPG. Your job is to classify the player's input into exactly one of the categories below.
 
 Current room: {context.get("room", "unknown")}
 Exits: {exits}
@@ -40,21 +46,34 @@ People here: {npcs}
 Enemies here: {enemies}
 Player inventory: {inventory}
 
-Available commands:
-- look         → examine the room (also: describe, inspect, examine, look around, etc.)
-- go <dir>     → move in a direction (exits: {exits})
-- talk <name>  → speak to an NPC (people here: {npcs})
-- attack <name>→ attack an enemy (enemies here: {enemies})
-- flee         → escape from combat
-- status       → show player stats
-- inventory    → show inventory
-- use <item>   → use an item
-- quests       → show quest log
-- help         → show help
-- quit         → quit the game
-- unknown      → if the input truly cannot map to any command
+=== COMMAND MAPPING ===
+Map actions, statements, and typos to the closest game command. Be very liberal:
+  look         → examine / describe / inspect / look around / what's here
+  go <dir>     → move / head / walk / go (direction from exits: {exits})
+  talk <name>  → speak / chat / ask / approach (person from: {npcs})
+  attack <name>→ fight / hit / strike / kill (enemy from: {enemies})
+  flee         → run / escape / retreat
+  status       → health / stats / how am I doing / check health
+  inventory    → items / what do I have / pack / bag
+  use <item>   → drink / eat / wield / equip / use (item from: {inventory})
+  quests       → journal / missions / objectives
+  help         → commands / what can I do
+  quit         → exit / leave / goodbye
 
-Return the single best matching command and any arguments. Be liberal in interpretation — "head downstairs" is "go down", "chat with the old woman" is "talk mira", "check my health" is "status"."""
+=== QUESTION vs COMMAND ===
+If the input is a QUESTION about the game world, environment, or lore — return command "question".
+Examples: "Is there anything on the wall?", "What does the tavern smell like?", "Is the cellar door locked?"
+
+=== OUT OF GAME ===
+If the input has nothing to do with the game world (asking for poems, math, real-world facts,
+general conversation, system requests) — return command "out_of_game".
+Examples: "Write me a poem", "What's 2+2?", "Tell me a joke", "Who wrote this game?"
+
+=== AMBIGUOUS ACTIONS ===
+If the player states an intent that maps loosely to a command, use the command.
+"I would like to use my sword" → use sword
+"Let's head downstairs" → go down
+"I want to talk to the old woman" → talk mira"""
 
     try:
         response = client.messages.parse(

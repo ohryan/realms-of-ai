@@ -21,6 +21,7 @@ from engine.narrator import Narrator
 from engine.config import load_api_key, load_player_name
 from engine.loader import select_module, build_npc_facts
 from engine.commands import CommandsMixin
+from engine.save import save_game, load_game, restore_player, delete_save
 
 
 BASE_DIR = Path(__file__).parent
@@ -38,6 +39,7 @@ class Game(CommandsMixin):
         self.narrator: Narrator = None
         self.module_id: str = None
         self.module_dir: Path = None
+        self.save_path: Path = None
 
     # ------------------------------------------------------------------ #
     #  Startup                                                             #
@@ -54,16 +56,15 @@ class Game(CommandsMixin):
         self.client = Anthropic(api_key=api_key)
 
         name = load_player_name(BASE_DIR)
-        self.player = Player(name=name)
 
         module = select_module(BASE_DIR)
         self.module_id = module["id"]
         self.module_dir = module["path"]
+        self.save_path = self.module_dir / "save.json"
 
         # Load world
         world_data = json.loads((self.module_dir / "world.json").read_text())
         self.world = World(world_data, module_dir=self.module_dir)
-        self.current_room_id = world_data["start_room"]
         self.quests = QuestManager(world_data["quests"])
 
         memory_dir = self.module_dir / "memory"
@@ -85,18 +86,31 @@ class Game(CommandsMixin):
                 game_facts=build_npc_facts(npc_id, world_data, self.module_dir),
             )
 
-        # Apply player_start inventory (weapons auto-equip if first weapon)
-        for item_id in world_data.get("player_start", {}).get("inventory", []):
-            template = self.world.get_item_template(item_id)
-            if template:
-                item = dict(template)
-                self.player.add_item(item)
-                if item.get("type") == "weapon" and self.player.equipped_weapon is None:
-                    self.player.equip(item)
+        # Check for a saved game
+        save_data = load_game(self.save_path)
+        if save_data:
+            saved_name = save_data["player"]["name"]
+            R.print_separator()
+            R.print_info(f"A saved game was found for {R.BRIGHT_WHITE}{saved_name}{R.RESET}.")
+            try:
+                choice = input(
+                    f"  {R.BRIGHT_WHITE}Continue saved game? (y/n): {R.RESET}"
+                ).strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                choice = "n"
 
-        R.print_separator()
-        R.print_success(f"Welcome, {name}. Your adventure begins.")
-        R.print_separator()
+            if choice in ("y", "yes", ""):
+                self.player = restore_player(save_data)
+                self.current_room_id = save_data["current_room_id"]
+                self.quests.status = save_data["quests"]
+                R.print_separator()
+                R.print_success(f"Welcome back, {self.player.name}. Your adventure continues.")
+                R.print_separator()
+            else:
+                self._start_new_game(name, world_data)
+        else:
+            self._start_new_game(name, world_data)
+
         print()
         self._look()
 
@@ -104,7 +118,23 @@ class Game(CommandsMixin):
             self._tick()
 
         if not self.player.is_alive:
-            pass  # death screen already shown in combat
+            # Player died — wipe the save so they can't reload into a dead state
+            delete_save(self.save_path)
+
+    def _start_new_game(self, name: str, world_data: dict):
+        """Initialise a fresh player and apply the module's starting inventory."""
+        self.player = Player(name=name)
+        self.current_room_id = world_data["start_room"]
+        for item_id in world_data.get("player_start", {}).get("inventory", []):
+            template = self.world.get_item_template(item_id)
+            if template:
+                item = dict(template)
+                self.player.add_item(item)
+                if item.get("type") == "weapon" and self.player.equipped_weapon is None:
+                    self.player.equip(item)
+        R.print_separator()
+        R.print_success(f"Welcome, {name}. Your adventure begins.")
+        R.print_separator()
 
     # ------------------------------------------------------------------ #
     #  Main loop                                                           #
@@ -115,6 +145,7 @@ class Game(CommandsMixin):
         try:
             raw = input(f"{R.BRIGHT_WHITE}> {R.RESET}").strip()
         except (EOFError, KeyboardInterrupt):
+            self._do_save()
             self.running = False
             return
 
@@ -149,7 +180,8 @@ class Game(CommandsMixin):
             case "help" | "h" | "?":
                 R.print_help()
             case "quit" | "exit" | "bye":
-                R.print_info("Farewell, adventurer. May the road treat you well.")
+                self._do_save()
+                R.print_info("Farewell, adventurer. Your progress has been saved.")
                 self.running = False
             case _:
                 self._interpret_and_run(raw)
@@ -271,6 +303,23 @@ class Game(CommandsMixin):
             R.print_success(f"You received: {template['name']}")
 
     # ------------------------------------------------------------------ #
+    #  Save                                                                #
+    # ------------------------------------------------------------------ #
+
+    def _do_save(self):
+        """Persist current game state to disk."""
+        if self.save_path is None or self.player is None:
+            return
+        ok = save_game(
+            self.save_path,
+            self.player,
+            self.current_room_id,
+            self.quests.status,
+        )
+        if not ok:
+            R.print_warning("Could not write save file.")
+
+    # ------------------------------------------------------------------ #
     #  AI helpers                                                          #
     # ------------------------------------------------------------------ #
 
@@ -280,11 +329,14 @@ class Game(CommandsMixin):
         result = interpret(raw, self._build_interpreter_context(), self.client)
         print("      ", end="\r")
 
-        if result is None or result.command == "unknown":
-            self._narrate(raw)
+        if result is None:
+            self._narrate(raw, "unknown")
             return
 
         match result.command:
+            case "question":    self._narrate(raw, "question")
+            case "out_of_game": self._narrate(raw, "out_of_game")
+            case "unknown":     self._narrate(raw, "unknown")
             case "look":        self._look()
             case "go":          self._go(result.args)
             case "talk":        self._talk(result.args)
@@ -297,16 +349,18 @@ class Game(CommandsMixin):
             case "quests":      self.quests.show()
             case "help":        R.print_help()
             case "quit":
-                R.print_info("Farewell, adventurer.")
+                self._do_save()
+                R.print_info("Farewell, adventurer. Your progress has been saved.")
                 self.running = False
             case _:
                 R.print_error(f"Not sure what you mean by '{raw}'. Type 'help' for commands.")
 
-    def _narrate(self, question: str):
+    def _narrate(self, question: str, input_type: str = "question"):
+        """Route a non-command input to the narrator with the appropriate type."""
         room = self.world.get_room(self.current_room_id)
         context = self._build_room_context(room)
         print(f"\n  {R.DIM}{R.WHITE}...{R.RESET}", end="\r")
-        response = self.narrator.ask(question, context, self.client)
+        response = self.narrator.ask(question, context, self.client, input_type=input_type)
         print("      ", end="\r")
         if response:
             print(f"\n  {R.WHITE}{response}{R.RESET}")

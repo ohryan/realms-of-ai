@@ -1,5 +1,7 @@
 data/config.json
 data/modules/*/memory/
+data/modules/*/save.json
 __pycache__/
 *.pyc
 .env
+.plans/
