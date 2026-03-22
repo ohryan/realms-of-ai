@@ -241,9 +241,9 @@ def print_narrator_say(text: str):
     print()
     first = True
     for l in lines:
-        prefix = f"{BRIGHT_MAGENTA}{label}{RESET}{DIM}{WHITE}:{RESET} " if first \
+        prefix = f"{BRIGHT_MAGENTA}{label}{RESET}{WHITE}:{RESET} " if first \
                  else " " * prefix_len
-        print(f"  {prefix}{DIM}{WHITE}{l}{RESET}")
+        print(f"  {prefix}{WHITE}{l}{RESET}")
         first = False
 
 

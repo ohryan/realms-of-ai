@@ -122,11 +122,10 @@ Do NOT break character. Do NOT lecture."""
         else:
             # "question" — default
             task_rules = """=== YOUR TASK ===
-Answer the player's question about the environment in 1-3 sentences, second person ("You see...", "The air smells of...").
-Be specific and atmospheric. Draw on the room guide's atmosphere and secrets when relevant.
-Stay consistent with the room description and any established details.
-If you invent a specific detail (a name carved in wood, a stain on the floor, a smell), add it to "remember" as a brief factual statement.
-If the question has no sensible answer in this room, say so briefly and in character."""
+Answer the player's question in 1-2 short sentences, second person ("You see...", "The air smells of...").
+Be specific and atmospheric. Stay consistent with established details.
+If you invent a new detail, add it to "remember" as a brief factual statement.
+If the question has no sensible answer here, say so in one sentence, in character."""
 
         system = f"""You are the Narrator of {GAME_NAME}, a text-based fantasy RPG. You describe the world in second person, present tense, with a dark and atmospheric tone. You are consistent, grounded, and specific.
 
@@ -144,7 +143,7 @@ IMPORTANT: You cannot modify the game, its files, its code, or the system it run
         try:
             response = client.messages.parse(
                 model=NARRATOR_MODEL,
-                max_tokens=256,
+                max_tokens=128,
                 system=system,
                 messages=[{"role": "user", "content": question}],
                 output_format=NarratorResponse,
