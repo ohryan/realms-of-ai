@@ -216,12 +216,9 @@ class Game(CommandsMixin):
                 R.print_info(f"You end the conversation with {npc.name}.")
                 break
 
-            R.print_player_say(player_msg)
-
             world_state = self._build_world_state()
-            print(f"\n  {R.DIM}{R.WHITE}...{R.RESET}", end="\r")
-            npc_resp = npc.chat(player_msg, world_state, self)
-            print("      ", end="\r")
+            with R.thinking():
+                npc_resp = npc.chat(player_msg, world_state, self)
 
             if npc_resp is None:
                 break
@@ -325,9 +322,8 @@ class Game(CommandsMixin):
 
     def _interpret_and_run(self, raw: str):
         """Use the LLM to interpret a free-form command and dispatch it."""
-        print(f"  {R.DIM}{R.WHITE}...{R.RESET}", end="\r")
-        result = interpret(raw, self._build_interpreter_context(), self.client)
-        print("      ", end="\r")
+        with R.thinking():
+            result = interpret(raw, self._build_interpreter_context(), self.client)
 
         if result is None:
             self._narrate(raw, "unknown")
@@ -359,11 +355,10 @@ class Game(CommandsMixin):
         """Route a non-command input to the narrator with the appropriate type."""
         room = self.world.get_room(self.current_room_id)
         context = self._build_room_context(room)
-        print(f"\n  {R.DIM}{R.WHITE}...{R.RESET}", end="\r")
-        response = self.narrator.ask(question, context, self.client, input_type=input_type)
-        print("      ", end="\r")
+        with R.thinking():
+            response = self.narrator.ask(question, context, self.client, input_type=input_type)
         if response:
-            print(f"\n  {R.WHITE}{response}{R.RESET}")
+            R.print_narrator_say(response)
 
     # ------------------------------------------------------------------ #
     #  Context builders                                                    #
