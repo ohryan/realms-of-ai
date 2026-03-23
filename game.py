@@ -65,7 +65,7 @@ class Game(CommandsMixin):
         # Load world
         world_data = json.loads((self.module_dir / "world.json").read_text())
         self.world = World(world_data, module_dir=self.module_dir)
-        self.quests = QuestManager(world_data["quests"])
+        self.quests = QuestManager(self.world.quest_defs)
 
         memory_dir = self.module_dir / "memory"
         self.narrator = Narrator(memory_dir=memory_dir)

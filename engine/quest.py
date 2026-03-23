@@ -96,7 +96,7 @@ class QuestManager:
             has_any = True
             from . import renderer as R
             name = qdef["name"]
-            desc = qdef["description"]
+            desc = qdef.get("description", "")
             if status == ACTIVE:
                 marker = f"{R.BRIGHT_YELLOW}[ACTIVE]{R.RESET}"
             elif status == COMPLETE:
